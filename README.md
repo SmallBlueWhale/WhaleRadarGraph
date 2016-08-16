@@ -64,7 +64,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.huayuxun.whale.whaleradargraph.MainActivity">
-
     <com.huayuxun.whale.whaleradargraph.widget.WhaleRadarGraph
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -83,7 +82,6 @@
         app:layout_constraintRight_toRightOf="@+id/activity_main"
         app:layout_constraintTop_toTopOf="@+id/activity_main" />
 </LinearLayout>
-
 ```
 
 - 外部接口
