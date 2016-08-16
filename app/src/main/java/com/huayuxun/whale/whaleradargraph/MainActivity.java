@@ -13,11 +13,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mWhaleRadarGraph = (WhaleRadarGraph)findViewById(R.id.wrg_main_activity);
         mWhaleRadarGraph.addData("金辉",0.9f);
-        mWhaleRadarGraph.addData("夏梦",0.5f);
-        mWhaleRadarGraph.addData("宝洁",0.5f);
-        mWhaleRadarGraph.addData("佳涛",0.5f);
         mWhaleRadarGraph.addData("基基龙",0.5f);
         mWhaleRadarGraph.addData("达达",0.5f);
-        mWhaleRadarGraph.reFresh();
     }
 }

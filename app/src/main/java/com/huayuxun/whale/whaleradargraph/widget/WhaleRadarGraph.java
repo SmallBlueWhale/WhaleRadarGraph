@@ -98,6 +98,9 @@ public class WhaleRadarGraph extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(mRadarAttrData.size() < 3) {
+            return;
+        }
         initShape(canvas, mRadius, mLineColor, mLevel, mShapeSpan);
         initMyShape(canvas);
     }
@@ -110,9 +113,6 @@ public class WhaleRadarGraph extends View {
     //maxvalue：maxvalue
     public void addData(String attrName ,float attrValue,float maxvalue){
         mRadarAttrData.add(new Pair<String, Float>(attrName,attrValue/maxvalue));
-    }
-
-    public void reFresh(){
         invalidate();
     }
 
