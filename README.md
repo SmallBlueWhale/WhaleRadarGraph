@@ -76,11 +76,7 @@
         app:distance="9dp"
         app:radius="100dp"
         app:shapeSpan="3dp"
-        app:overLayerAlph="70"
-        app:layout_constraintBottom_toBottomOf="@+id/activity_main"
-        app:layout_constraintLeft_toLeftOf="@+id/activity_main"
-        app:layout_constraintRight_toRightOf="@+id/activity_main"
-        app:layout_constraintTop_toTopOf="@+id/activity_main" />
+        app:overLayerAlph="70" />
 </LinearLayout>
 ```
 
