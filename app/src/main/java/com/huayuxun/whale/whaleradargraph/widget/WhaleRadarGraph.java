@@ -11,6 +11,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
+
 import com.huayuxun.whale.whaleradargraph.R;
 
 import java.util.ArrayList;
@@ -21,17 +22,24 @@ import java.util.List;
  */
 
 public class WhaleRadarGraph extends View {
-    private int mRadius;           //外界多边形的半径  CircleRadius
+    private float mRadius;           //外界多边形的半径  CircleRadius
     private int mLevel;           //外圈层数
     private int mLineColor;       //线条颜色
     private int mShapeColor;      //内多边形颜色
-    private int mShapeSpan;       //多边形的间隔
-    private List<Pair<String,Float>> mRadarAttrData;//雷达图的属性
+    private int mTextColor;      //文字颜色
+    private float mShapeSpan;       //多边形的间隔
+    private float mDistance;          //文字到该点的距离
+    private List<Pair<String, Float>> mRadarAttrData;//雷达图的属性
     private double mPerAngle;
     private int mWidth;
     private int mHeight;
     private Paint mPaint;
     private int mOverLayerAlph;     //覆盖层的透明度
+
+    private Paint mTextPaint;       //绘制文字画笔
+    private float mTextSize;          //文字的大小
+
+
     public WhaleRadarGraph(Context context) {
         this(context, null);
     }
@@ -56,20 +64,32 @@ public class WhaleRadarGraph extends View {
                     mLineColor = typedArray.getColor(att, Color.GREEN);
                     break;
                 case R.styleable.WhaleRadarGraph_radius:
-                    mRadius = typedArray.getDimensionPixelSize(R.styleable.WhaleRadarGraph_radius, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics()));
+                    mRadius = typedArray.getDimension(R.styleable.WhaleRadarGraph_radius, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.WhaleRadarGraph_shapeSpan:
-                    mShapeSpan = typedArray.getDimensionPixelSize(R.styleable.WhaleRadarGraph_shapeSpan, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics()));
+                    mShapeSpan = typedArray.getDimension(R.styleable.WhaleRadarGraph_shapeSpan, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.WhaleRadarGraph_overLayerAlph:
                     mOverLayerAlph = typedArray.getInt(R.styleable.WhaleRadarGraph_overLayerAlph, 50);
+                    break;
+                case R.styleable.WhaleRadarGraph_textColor:
+                    mTextColor = typedArray.getColor(att, Color.BLUE);
+                    break;
+                case R.styleable.WhaleRadarGraph_textSize:
+                    mTextSize = typedArray.getDimension(R.styleable.WhaleRadarGraph_textSize, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.WhaleRadarGraph_distance:
+                    mDistance = typedArray.getDimension(R.styleable.WhaleRadarGraph_distance, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics()));
                     break;
             }
         }
         typedArray.recycle();
         mRadarAttrData = new ArrayList<>();
         mPaint = new Paint();
-
+        mTextPaint = new Paint();
+        mTextPaint.setStrokeWidth(3);
+        mTextPaint.setTextSize(mTextSize);
+        mTextPaint.setColor(mTextColor);
     }
 
     public WhaleRadarGraph(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -80,6 +100,7 @@ public class WhaleRadarGraph extends View {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
     }
+
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -98,7 +119,7 @@ public class WhaleRadarGraph extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(mRadarAttrData.size() < 3) {
+        if (mRadarAttrData.size() < 3) {
             return;
         }
         initShape(canvas, mRadius, mLineColor, mLevel, mShapeSpan);
@@ -106,25 +127,21 @@ public class WhaleRadarGraph extends View {
     }
 
     //maxvalue：1
-    public void addData(String attrName ,float attrValue){
-        mRadarAttrData.add(new Pair<String, Float>(attrName,attrValue));
+    public void addData(String attrName, float attrValue) {
+        mRadarAttrData.add(new Pair<String, Float>(attrName, attrValue));
     }
 
     //maxvalue：maxvalue
-    public void addData(String attrName ,float attrValue,float maxvalue){
-        mRadarAttrData.add(new Pair<String, Float>(attrName,attrValue/maxvalue));
+    public void addData(String attrName, float attrValue, float maxvalue) {
+        mRadarAttrData.add(new Pair<String, Float>(attrName, attrValue / maxvalue));
         invalidate();
     }
 
 
     //初始化多边形以及轴线
-    public void initShape(Canvas canvas, int radius, int lineColor, int level, int shapeSpan) {
+    public void initShape(Canvas canvas, float radius, int lineColor, int level, float shapeSpan) {
         canvas.save();
         canvas.translate(mWidth / 2, mHeight / 2);
-        Paint textPaint = new Paint();
-        textPaint.setStrokeWidth(3);
-        textPaint.setTextSize(40);
-        textPaint.setColor(Color.BLUE);
         mPaint.setColor(lineColor);
         mPaint.setStrokeWidth(4);
         mPaint.setAntiAlias(true);
@@ -132,60 +149,71 @@ public class WhaleRadarGraph extends View {
         mPerAngle = 2 * Math.PI / mRadarAttrData.size();
         Path path = new Path();
         for (int i = 0; i < level; i++) {
-            int span = i * radius / level;
+            float span = i * radius / level;
             for (int j = 0; j < mRadarAttrData.size(); j++) {
                 double testx = (radius - span) * Math.sin(mPerAngle * j);
                 double testy = (radius - span) * Math.cos(mPerAngle * j);
                 //第一个点处理起来比较麻烦
                 if (j == 0) {
                     path.moveTo(0, -(float) (radius - span));
-                    textPaint.setTextAlign(Paint.Align.CENTER);
-                    canvas.drawText(mRadarAttrData.get(0).first,(float)0,-(float) (radius + 20),textPaint);
+                    mTextPaint.setTextAlign(Paint.Align.CENTER);
+                    canvas.drawText(mRadarAttrData.get(0).first, (float) 0, -(float) (radius + mDistance), mTextPaint);
                     canvas.drawPoint(0, -(float) (radius - span), mPaint);
                     canvas.drawLine(0, 0, 0, -(float) (radius - span), mPaint);
                 } else {
                     path.lineTo((float) testx, -(float) testy);
                     canvas.drawPoint((float) testx, -(float) testy, mPaint);
                     canvas.drawLine(0, 0, (float) testx, -(float) testy, mPaint);
-                    if(mRadarAttrData.size()%2 == 0 && j == mRadarAttrData.size()/2 ) {
-                        textPaint.setTextAlign(Paint.Align.CENTER);
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) , -(float) ((radius) * Math.cos(mPerAngle * j))     + 50, textPaint);
+                    if (mRadarAttrData.size() % 2 == 0 && j == mRadarAttrData.size() / 2) {
+                        mTextPaint.setTextAlign(Paint.Align.CENTER);
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance + mTextSize) * Math.sin(mPerAngle * j)), -(float) (((radius + mDistance + mTextSize)) * Math.cos(mPerAngle * j)), mTextPaint);
                     }
 
                     //Y轴正坐标上，Y轴和X轴上的点需要特别去处理，因为绘制文字，你的文字要居中放置
-                    else if( mRadarAttrData.size() % 4 == 0 && j == mRadarAttrData.size()/4 ){
-                        textPaint.setTextAlign(Paint.Align.LEFT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) + 20, -(float) ((radius) * Math.cos(mPerAngle * j)) , textPaint);
+                    //x轴的正坐标上
+                    else if (mRadarAttrData.size() % 4 == 0 && j == mRadarAttrData.size() / 4) {
+                        mTextPaint.setTextAlign(Paint.Align.LEFT);
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) ((radius + mDistance) * Math.cos(mPerAngle * j)) + mTextSize / 2.5f, mTextPaint);
                     }
-                    else if( mRadarAttrData.size() % 4 == 0 && j == mRadarAttrData.size()/4 * 3 ){
-                        textPaint.setTextAlign(Paint.Align.RIGHT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) - 20, -(float) ((radius) * Math.cos(mPerAngle * j)) , textPaint);
+                    //x轴的负坐标上
+                    else if (mRadarAttrData.size() % 4 == 0 && j == mRadarAttrData.size() / 4 * 3) {
+                        mTextPaint.setTextAlign(Paint.Align.RIGHT);
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) ((radius + mDistance) * Math.cos(mPerAngle * j)) + mTextSize / 2.5f, mTextPaint);
                     }
                     //第一象限
-                    else if(Math.sin(mPerAngle * j)>0 && Math.cos(mPerAngle * j)>0){
-                        textPaint.setTextAlign(Paint.Align.LEFT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) + 20, -(float) ((radius) * Math.cos(mPerAngle * j)) - 30, textPaint);
+                    else if (Math.sin(mPerAngle * j) > 0 && Math.cos(mPerAngle * j) > 0) {
+                        mTextPaint.setTextAlign(Paint.Align.LEFT);
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) (((radius + mDistance)) * Math.cos(mPerAngle * j)), mTextPaint);
                     }
                     //第二象限
-                    else if(Math.sin(mPerAngle * j)>0 && Math.cos(mPerAngle * j)<0){
-                        textPaint.setTextAlign(Paint.Align.LEFT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) + 20, -(float) ((radius) * Math.cos(mPerAngle * j)) + 50, textPaint);
+                    else if (Math.sin(mPerAngle * j) > 0 && Math.cos(mPerAngle * j) < 0) {
+                        if (mRadarAttrData.size() % 2 != 0 && j == mRadarAttrData.size()/2) {
+                            mTextPaint.setTextAlign(Paint.Align.CENTER);
+                        } else {
+                            mTextPaint.setTextAlign(Paint.Align.LEFT);
+                        }
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) (((radius + mDistance)) * Math.cos(mPerAngle * j)) + mTextSize, mTextPaint);
                     }
                     //第三象限
-                    else if(Math.sin(mPerAngle * j)<0 && Math.cos(mPerAngle * j)<0){
-                        textPaint.setTextAlign(Paint.Align.RIGHT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) + 20, -(float) ((radius) * Math.cos(mPerAngle * j)) + 50, textPaint);
+                    else if (Math.sin(mPerAngle * j) < 0 && Math.cos(mPerAngle * j) < 0) {
+                        if (mRadarAttrData.size() % 2 !=  0 && j  == mRadarAttrData.size()/2 + 1) {
+                            mTextPaint.setTextAlign(Paint.Align.CENTER);
+                        } else {
+                            mTextPaint.setTextAlign(Paint.Align.RIGHT);
+                        }
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) (((radius + mDistance)) * Math.cos(mPerAngle * j)) + mTextSize, mTextPaint);
                     }
                     //第四象限
-                    else if(Math.sin(mPerAngle * j)<0 && Math.cos(mPerAngle * j)>0){
-                        textPaint.setTextAlign(Paint.Align.RIGHT);
-                        Log.e("Math.sin--》",Math.sin(mPerAngle * j)+"");
-                        canvas.drawText(mRadarAttrData.get(j).first, (float) (radius * Math.sin(mPerAngle * j)) + 20, -(float) ((radius) * Math.cos(mPerAngle * j)) - 30, textPaint);
+                    else if (Math.sin(mPerAngle * j) < 0 && Math.cos(mPerAngle * j) > 0) {
+                        mTextPaint.setTextAlign(Paint.Align.RIGHT);
+                        Log.e("Math.sin--》", Math.sin(mPerAngle * j) + "");
+                        canvas.drawText(mRadarAttrData.get(j).first, (float) ((radius + mDistance) * Math.sin(mPerAngle * j)), -(float) ((radius + mDistance) * Math.cos(mPerAngle * j)), mTextPaint);
+
                     }
                 }
             }
@@ -193,6 +221,12 @@ public class WhaleRadarGraph extends View {
             canvas.drawPath(path, mPaint);
         }
         canvas.restore();
+    }
+
+
+    public void getTextSize() {
+        Log.e("" + mTextSize, "----------->>>>>>>>>>catch");
+        Log.e("" + mRadius, "----------->>>>>>>>>>catch");
     }
 
     //根据百分比绘制黄色或则其它颜色多边形
@@ -209,26 +243,26 @@ public class WhaleRadarGraph extends View {
         canvas.translate(mWidth / 2, mHeight / 2);
         Path path = new Path();
         for (int j = 0; j < mRadarAttrData.size(); j++) {
-            double testx = (mRadius * mRadarAttrData.get(j).second)     * Math.sin(mPerAngle * j);
-            double testy = (mRadius * mRadarAttrData.get(j).second)     * Math.cos(mPerAngle * j);
+            double testx = (mRadius * mRadarAttrData.get(j).second) * Math.sin(mPerAngle * j);
+            double testy = (mRadius * mRadarAttrData.get(j).second) * Math.cos(mPerAngle * j);
             double nextTestx;
             double nextTesty;
-            if(j != mRadarAttrData.size() - 1 ) {
+            if (j != mRadarAttrData.size() - 1) {
                 nextTestx = (mRadius * mRadarAttrData.get(j + 1).second) * Math.sin(mPerAngle * (j + 1));
                 nextTesty = (mRadius * mRadarAttrData.get(j + 1).second) * Math.cos(mPerAngle * (j + 1));
-            }else{
+            } else {
                 nextTestx = 0;
                 nextTesty = mRadius * mRadarAttrData.get(0).second;
             }
             if (j == 0) {
                 path.moveTo(0, -(float) (mRadius * mRadarAttrData.get(0).second));
                 canvas.drawPoint(0, -(float) (mRadius * mRadarAttrData.get(0).second), pointPaint);
-                canvas.drawLine(0,-(float) (mRadius * mRadarAttrData.get(0).second), (float) nextTestx, -(float) nextTesty, pointPaint);
+                canvas.drawLine(0, -(float) (mRadius * mRadarAttrData.get(0).second), (float) nextTestx, -(float) nextTesty, pointPaint);
 
             } else {
                 path.lineTo((float) testx, -(float) testy);
                 canvas.drawPoint((float) testx, -(float) testy, pointPaint);
-                canvas.drawLine((float)testx,-(float)testy, (float) nextTestx, -(float) nextTesty , pointPaint);
+                canvas.drawLine((float) testx, -(float) testy, (float) nextTestx, -(float) nextTesty, pointPaint);
             }
         }
         path.close();
@@ -236,5 +270,4 @@ public class WhaleRadarGraph extends View {
         canvas.restore();
 
     }
-
 }
