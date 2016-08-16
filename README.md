@@ -2,7 +2,7 @@
 雷达图,支持定制,颜色，属性，外围圈数，大小，透明度。
 
 # 效果图
-# ![image](https://github.com/kinghui/WhaleRadarGraph/image/Screenshots.png "效果图")
+# ![image](https://github.com/kinghui/WhaleRadarGraph/image/Screenshot.png "效果图")
 
 # 用法
 ## 1. 添加依赖
