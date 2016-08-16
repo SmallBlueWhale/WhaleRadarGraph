@@ -23,16 +23,18 @@
 ## 3. 添加数据
 ```java
  final WhaleRadarGraph mWhaleRadarGraph = (WhaleRadarGraph) findViewById(R.id.wrg);
- if (mWhaleRadarGraph != null) {
-     mWhaleRadarGraph.addData("技能 A", 0.8f);
-     mWhaleRadarGraph.addData("技能 B", 0.6f);
-     mWhaleRadarGraph.addData("技能 C", 0.8f);
-     mWhaleRadarGraph.addData("技能 D", 0.6f);
-     mWhaleRadarGraph.addData("技能 E", 0.8f);
-     mWhaleRadarGraph.addData("技能 F", 0.6f);
+ if (mWhaleRadarGraph != null) {        
+		mWhaleRadarGraph.addData("金辉",0.9f);
+        mWhaleRadarGraph.addData("夏梦",0.3f);
+        mWhaleRadarGraph.addData("宝洁",0.5f);
+        mWhaleRadarGraph.addData("佳涛",0.5f);
+        mWhaleRadarGraph.addData("gaygay龙",0.1f);
+        mWhaleRadarGraph.addData("大火包",0.6f);
+        mWhaleRadarGraph.addData("吾儿强",0.5f);
+        mWhaleRadarGraph.addData("达达",0.7f);
+        mWhaleRadarGraph.addData("绿菊林",0.45f);
  }
 
- mWhaleRadarGraph.refresh();
 ```
 
 # 更多特性
@@ -43,23 +45,45 @@
 |外界多边形的半径       |radius       |
 |内圈层数     | level  |
 |内圈之间的间隔   |shapeSpan   |
-|文本字体颜色   |textColor       |
 |覆盖层线条颜色 | lineColor|
 |覆盖层的透明度       |overLayerAlph      |
 |覆盖层内部颜色 |shapeColor|
+|文字距离该指定坐标点的距离 |distance|
+|文本字体大小 |textSize|
+|文本字体颜色   |textColor       |
 
 > 例如:
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_main"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.huayuxun.whale.whaleradargraph.MainActivity">
+
     <com.huayuxun.whale.whaleradargraph.widget.WhaleRadarGraph
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/wrg_main_activity"
         app:level="3"
         app:lineColor="#1AFF00"
+        app:textColor="@android:color/holo_blue_bright"
+        app:textSize="15sp"
         app:shapeColor="#FFFF37"
-        app:radius="60dp"
+        app:distance="9dp"
+        app:radius="100dp"
         app:shapeSpan="3dp"
-        app:overLayerAlph="70"/>
+        app:overLayerAlph="70"
+        app:layout_constraintBottom_toBottomOf="@+id/activity_main"
+        app:layout_constraintLeft_toLeftOf="@+id/activity_main"
+        app:layout_constraintRight_toRightOf="@+id/activity_main"
+        app:layout_constraintTop_toTopOf="@+id/activity_main" />
+</LinearLayout>
+
 ```
 
 - 外部接口
