@@ -3,6 +3,7 @@
 
 # 效果图
 # ![image](https://github.com/kinghui/WhaleRadarGraph/image/Screenshot.png "效果图")
+# ![image](https://github.com/kinghui/WhaleRadarGraph/image/Screenshot.png?raw=true)   )
 
 # 用法
 ## 1. 添加依赖
