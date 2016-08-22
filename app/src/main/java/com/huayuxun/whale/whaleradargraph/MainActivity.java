@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
         mWhaleRadarGraph.addData("吾儿强",0.5f);
         mWhaleRadarGraph.addData("达达",0.7f);
         mWhaleRadarGraph.addData("绿菊林",0.45f);
-        mWhaleRadarGraph.getTextSize();
 
         DisplayMetrics metric = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metric);

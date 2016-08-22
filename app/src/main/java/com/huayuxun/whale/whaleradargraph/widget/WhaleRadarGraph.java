@@ -39,13 +39,15 @@ public class WhaleRadarGraph extends View {
     private Paint mTextPaint;       //绘制文字画笔
     private float mTextSize;          //文字的大小
 
-
+    private Context mContext;
     public WhaleRadarGraph(Context context) {
         this(context, null);
+        mContext = context;
     }
 
     public WhaleRadarGraph(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
+        mContext = context;
     }
 
     public WhaleRadarGraph(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -83,6 +85,7 @@ public class WhaleRadarGraph extends View {
                     break;
             }
         }
+        mContext = context;
         typedArray.recycle();
         mRadarAttrData = new ArrayList<>();
         mPaint = new Paint();
@@ -112,9 +115,24 @@ public class WhaleRadarGraph extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
+        setMeasuredDimension(getRadarGraphSize(widthMeasureSpec),getRadarGraphSize(heightMeasureSpec));
     }
 
+    private int getRadarGraphSize(int measureSpec) {
+        int width = 0;
+        int specSize = MeasureSpec.getSize(measureSpec);
+        int specMode = MeasureSpec.getMode(measureSpec);
+        if(specMode==MeasureSpec.EXACTLY){
+            width = specSize;
+        }
+        else{
+            width = (int)(mRadius * 2 + mTextSize * 2 + mDistance * 2);
+            if(specMode == MeasureSpec.AT_MOST) {
+                width = Math.min(specSize , width);
+            }
+        }
+        return width;
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -190,7 +208,7 @@ public class WhaleRadarGraph extends View {
                     }
                     //第二象限
                     else if (Math.sin(mPerAngle * j) > 0 && Math.cos(mPerAngle * j) < 0) {
-                        if (mRadarAttrData.size() % 2 != 0 && j == mRadarAttrData.size()/2) {
+                        if (mRadarAttrData.size() % 2 != 0 && j == mRadarAttrData.size() / 2) {
                             mTextPaint.setTextAlign(Paint.Align.CENTER);
                         } else {
                             mTextPaint.setTextAlign(Paint.Align.LEFT);
@@ -200,7 +218,7 @@ public class WhaleRadarGraph extends View {
                     }
                     //第三象限
                     else if (Math.sin(mPerAngle * j) < 0 && Math.cos(mPerAngle * j) < 0) {
-                        if (mRadarAttrData.size() % 2 !=  0 && j  == mRadarAttrData.size()/2 + 1) {
+                        if (mRadarAttrData.size() % 2 != 0 && j == mRadarAttrData.size() / 2 + 1) {
                             mTextPaint.setTextAlign(Paint.Align.CENTER);
                         } else {
                             mTextPaint.setTextAlign(Paint.Align.RIGHT);
@@ -223,11 +241,6 @@ public class WhaleRadarGraph extends View {
         canvas.restore();
     }
 
-
-    public void getTextSize() {
-        Log.e("" + mTextSize, "----------->>>>>>>>>>catch");
-        Log.e("" + mRadius, "----------->>>>>>>>>>catch");
-    }
 
     //根据百分比绘制黄色或则其它颜色多边形
     private void initMyShape(Canvas canvas) {
