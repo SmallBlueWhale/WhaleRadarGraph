@@ -14,10 +14,19 @@
 
 ## 2. 布局文件中定义
 ```xml
-    <com.huayuxun.whale.whaleradargraph.widget.WhaleRadarGraph
-        android:id="@+id/wrg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <com.huayuxun.whale.whaleradargraph.widget.WhaleRadarGraph
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wrg_main_activity"
+        app:level="3"
+        app:lineColor="#1AFF00"
+        app:textColor="@android:color/holo_blue_bright"
+        app:textSize="15sp"
+        app:shapeColor="#FFFF37"
+        app:distance="9dp"
+        app:radius="70dp"
+        app:shapeSpan="3dp"
+        app:overLayerAlph="70" />
 ```
 
 ## 3. 添加数据
@@ -74,7 +83,7 @@
         app:textSize="15sp"
         app:shapeColor="#FFFF37"
         app:distance="9dp"
-        app:radius="100dp"
+        app:radius="70dp"
         app:shapeSpan="3dp"
         app:overLayerAlph="70" />
 </LinearLayout>
