@@ -4,6 +4,7 @@
 # 效果图
 # ![image](https://github.com/SmallBlueWhale/WhaleRadarGraph/raw/master/image/Screenshot.png "效果图")
 
+# ![image](https://github.com/SmallBlueWhale/WhaleRadarGraph/raw/master/image/Screenshot2.png "效果图")
 # 用法
 ## 1. 添加依赖
 克隆本项目添加依赖或者在Gradle中添加依赖:
@@ -15,9 +16,22 @@
 ## 2. 布局文件中定义
 ```xml
     <com.huayuxun.whale.whaleradargraph.widget.WhaleRadarGraph
-        android:id="@+id/wrg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/wrg_main_activity"
+        app:level="3"
+        app:lineColor="#1AFF00"
+        app:textColor="@android:color/holo_blue_bright"
+        app:textSize="15sp"
+        app:shapeColor="#FFFF37"
+        app:distance="9dp"
+        app:radius="70dp"
+        app:shapeSpan="3dp"
+        app:overLayerAlph="70"
+        app:overLayerPointSize="5dp"
+        app:overLayerPointColor="@android:color/black"
+        app:overLayerLineSize="2dp"
+        app:overLayerLineColor="@android:color/holo_orange_light"
 ```
 
 ## 3. 添加数据
@@ -45,12 +59,16 @@
 |外界多边形的半径       |radius       |
 |内圈层数     | level  |
 |内圈之间的间隔   |shapeSpan   |
-|覆盖层线条颜色 | lineColor|
-|覆盖层的透明度       |overLayerAlph      |
+|网格线条颜色 | lineColor|
 |覆盖层内部颜色 |shapeColor|
 |文字距离该指定坐标点的距离 |distance|
 |文本字体大小 |textSize|
 |文本字体颜色   |textColor       |
+|覆盖层的透明度       |overLayerAlph      |
+|覆盖层点的大小       |overLayerPointSize      |
+|覆盖层点的颜色       |overLayerPointColor      |
+|覆盖层线段的大小       |overLayerLineSize      |
+|覆盖层线段的颜色       |overLayerLineColor      |
 
 > 例如:
 ```xml
@@ -74,9 +92,14 @@
         app:textSize="15sp"
         app:shapeColor="#FFFF37"
         app:distance="9dp"
-        app:radius="100dp"
+        app:radius="70dp"
         app:shapeSpan="3dp"
-        app:overLayerAlph="70" />
+        app:overLayerAlph="70"
+        app:overLayerPointSize="5dp"
+        app:overLayerPointColor="@android:color/black"
+        app:overLayerLineSize="2dp"
+        app:overLayerLineColor="@android:color/holo_orange_light"
+        />
 </LinearLayout>
 ```
 

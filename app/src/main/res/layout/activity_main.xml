@@ -20,5 +20,10 @@
         app:distance="9dp"
         app:radius="70dp"
         app:shapeSpan="3dp"
-        app:overLayerAlph="70" />
+        app:overLayerAlph="70"
+        app:overLayerPointSize="5dp"
+        app:overLayerPointColor="@android:color/black"
+        app:overLayerLineSize="2dp"
+        app:overLayerLineColor="@android:color/holo_orange_light"
+        />
 </LinearLayout>

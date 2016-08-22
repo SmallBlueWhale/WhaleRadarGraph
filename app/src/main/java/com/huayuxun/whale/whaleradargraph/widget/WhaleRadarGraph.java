@@ -22,12 +22,17 @@ import java.util.List;
  */
 
 public class WhaleRadarGraph extends View {
+    private Canvas mCanvas;
     private float mRadius;           //外界多边形的半径  CircleRadius
     private int mLevel;           //外圈层数
     private int mLineColor;       //线条颜色
     private int mShapeColor;      //内多边形颜色
     private int mTextColor;      //文字颜色
     private float mShapeSpan;       //多边形的间隔
+    private int mOverLayerPointColor;      //覆盖区点的颜色
+    private float mOverLayerPointSize;       //覆盖区点的大小
+    private int mOverLayerLineColor;      //覆盖区线段的颜色
+    private float mOverLayerLineSize;       //覆盖区线段的大小
     private float mDistance;          //文字到该点的距离
     private List<Pair<String, Float>> mRadarAttrData;//雷达图的属性
     private double mPerAngle;
@@ -36,10 +41,15 @@ public class WhaleRadarGraph extends View {
     private Paint mPaint;
     private int mOverLayerAlph;     //覆盖层的透明度
 
+    private Paint mLinePaint;       //绘制覆盖区线段画笔
+    private Paint mPointPaint;      //绘制覆盖区点画笔
+    private Paint mOverLayPaint;    //绘制覆盖区画笔
     private Paint mTextPaint;       //绘制文字画笔
-    private float mTextSize;          //文字的大小
+    private float mTextSize;        //文字的大小
 
     private Context mContext;
+
+
     public WhaleRadarGraph(Context context) {
         this(context, null);
         mContext = context;
@@ -80,8 +90,20 @@ public class WhaleRadarGraph extends View {
                 case R.styleable.WhaleRadarGraph_textSize:
                     mTextSize = typedArray.getDimension(R.styleable.WhaleRadarGraph_textSize, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
                     break;
+                case R.styleable.WhaleRadarGraph_overLayerPointColor:
+                    mOverLayerPointColor = typedArray.getColor(att, Color.BLACK);
+                    break;
+                case R.styleable.WhaleRadarGraph_overLayerPointSize:
+                    mOverLayerPointSize = typedArray.getDimension(R.styleable.WhaleRadarGraph_overLayerPointSize, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
+                    break;
                 case R.styleable.WhaleRadarGraph_distance:
                     mDistance = typedArray.getDimension(R.styleable.WhaleRadarGraph_distance, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics()));
+                    break;
+                case R.styleable.WhaleRadarGraph_overLayerLineColor:
+                    mOverLayerLineColor = typedArray.getColor(att, Color.BLACK);
+                    break;
+                case R.styleable.WhaleRadarGraph_overLayerLineSize:
+                    mOverLayerLineSize = typedArray.getDimension(R.styleable.WhaleRadarGraph_overLayerLineSize, (float) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
                     break;
             }
         }
@@ -89,7 +111,10 @@ public class WhaleRadarGraph extends View {
         typedArray.recycle();
         mRadarAttrData = new ArrayList<>();
         mPaint = new Paint();
+        mLinePaint = new Paint();
         mTextPaint = new Paint();
+        mPointPaint = new Paint();
+        mOverLayPaint = new Paint();
         mTextPaint.setStrokeWidth(3);
         mTextPaint.setTextSize(mTextSize);
         mTextPaint.setColor(mTextColor);
@@ -115,33 +140,48 @@ public class WhaleRadarGraph extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(getRadarGraphSize(widthMeasureSpec),getRadarGraphSize(heightMeasureSpec));
+        setMeasuredDimension(getRadarGraphWidth(widthMeasureSpec), getRadarGraphHeight(heightMeasureSpec));
     }
 
-    private int getRadarGraphSize(int measureSpec) {
+    private int getRadarGraphWidth(int widthMeasureSpec) {
         int width = 0;
-        int specSize = MeasureSpec.getSize(measureSpec);
-        int specMode = MeasureSpec.getMode(measureSpec);
-        if(specMode==MeasureSpec.EXACTLY){
+        int specSize = MeasureSpec.getSize(widthMeasureSpec);
+        int specMode = MeasureSpec.getMode(widthMeasureSpec);
+        if (specMode == MeasureSpec.EXACTLY) {
             width = specSize;
-        }
-        else{
-            width = (int)(mRadius * 2 + mTextSize * 2 + mDistance * 2);
-            if(specMode == MeasureSpec.AT_MOST) {
-                width = Math.min(specSize , width);
+        } else {
+            float wrapValue = 2.5f;  //这个校准参数是用来大约的预估一下宽度的，因为如果你真实要测量文字的宽，要考虑很多问题，比如当前最长文段长度
+            width = (int) (mRadius * 2 +  mTextSize * 2 * wrapValue + mDistance * 2);
+            if (specMode == MeasureSpec.AT_MOST) {
+                width = Math.min(specSize, width);
             }
         }
         return width;
     }
 
+    private int getRadarGraphHeight(int heightMeasureSpec) {
+        int height = 0;
+        int specSize = MeasureSpec.getSize(heightMeasureSpec);
+        int specMode = MeasureSpec.getMode(heightMeasureSpec);
+        if (specMode == MeasureSpec.EXACTLY) {
+            height = specSize;
+        } else {
+            height = (int) (mRadius * 2 + mTextSize * 2 + mDistance * 2);
+            if (specMode == MeasureSpec.AT_MOST) {
+                height = Math.min(specSize, height);
+            }
+        }
+        return height;
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        mCanvas = canvas;
         if (mRadarAttrData.size() < 3) {
             return;
         }
         initShape(canvas, mRadius, mLineColor, mLevel, mShapeSpan);
-        initMyShape(canvas);
+        initOverLay(canvas, mOverLayerPointColor, mOverLayerPointSize, mOverLayerLineColor, mOverLayerLineSize, mShapeColor, mOverLayerAlph);
     }
 
     //maxvalue：1
@@ -155,6 +195,12 @@ public class WhaleRadarGraph extends View {
         invalidate();
     }
 
+//    //增加一个新的覆盖区
+//    public void addOverLay(){
+//        if(mCanvas==null)
+//            return;
+//        initMyShape(mCanvas);
+//    }
 
     //初始化多边形以及轴线
     public void initShape(Canvas canvas, float radius, int lineColor, int level, float shapeSpan) {
@@ -243,15 +289,20 @@ public class WhaleRadarGraph extends View {
 
 
     //根据百分比绘制黄色或则其它颜色多边形
-    private void initMyShape(Canvas canvas) {
-        Paint paint = new Paint();
-        Paint pointPaint = new Paint();
-        pointPaint.setStrokeWidth(10);
-        paint.setStrokeWidth(4);
-        paint.setColor(mShapeColor);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAlpha(mOverLayerAlph);
-        pointPaint.setColor(mShapeColor);
+    private void initOverLay(Canvas canvas, int pointColor, float pointWidth, int lineColor, float lineWidth, int shapeColor, int alph) {
+        mLinePaint.setColor(lineColor);
+        mLinePaint.setStrokeWidth(lineWidth);
+        mLinePaint.setAntiAlias(true);
+
+        mPointPaint.setStrokeWidth(pointWidth);
+        mPointPaint.setColor(pointColor);
+        mPointPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        mOverLayPaint.setAntiAlias(true);
+        mOverLayPaint.setStrokeWidth(2);
+        mOverLayPaint.setColor(shapeColor);
+        mOverLayPaint.setStyle(Paint.Style.FILL);
+        mOverLayPaint.setAlpha(mOverLayerAlph);
         canvas.save();
         canvas.translate(mWidth / 2, mHeight / 2);
         Path path = new Path();
@@ -269,17 +320,17 @@ public class WhaleRadarGraph extends View {
             }
             if (j == 0) {
                 path.moveTo(0, -(float) (mRadius * mRadarAttrData.get(0).second));
-                canvas.drawPoint(0, -(float) (mRadius * mRadarAttrData.get(0).second), pointPaint);
-                canvas.drawLine(0, -(float) (mRadius * mRadarAttrData.get(0).second), (float) nextTestx, -(float) nextTesty, pointPaint);
+                canvas.drawPoint(0, -(float) (mRadius * mRadarAttrData.get(0).second), mPointPaint);
+                canvas.drawLine(0, -(float) (mRadius * mRadarAttrData.get(0).second), (float) nextTestx, -(float) nextTesty, mLinePaint);
 
             } else {
                 path.lineTo((float) testx, -(float) testy);
-                canvas.drawPoint((float) testx, -(float) testy, pointPaint);
-                canvas.drawLine((float) testx, -(float) testy, (float) nextTestx, -(float) nextTesty, pointPaint);
+                canvas.drawPoint((float) testx, -(float) testy, mPointPaint);
+                canvas.drawLine((float) testx, -(float) testy, (float) nextTestx, -(float) nextTesty, mLinePaint);
             }
         }
         path.close();
-        canvas.drawPath(path, paint);
+        canvas.drawPath(path, mOverLayPaint);
         canvas.restore();
 
     }
